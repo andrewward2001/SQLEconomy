@@ -1,0 +1,7 @@
+name: SQLEconomy
+main: tk.achmed.sqlecon.SQLEconomy
+version: 1
+description: An SQL economy plugin
+commands:
+  money:
+    description: Displays the sender's money
