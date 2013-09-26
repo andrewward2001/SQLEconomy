@@ -100,18 +100,12 @@ public class SQLEconomy extends JavaPlugin {
 
     public static void createTable() {
         try {
-            // Declares a statement
-            Statement statement = MySQL.getConnection().createStatement();
-
-            // Creates the table if it doesn't already exist
-            statement
-                    .executeUpdate("CREATE TABLE IF NOT EXISTS `"
+            PreparedStatement tableCreate = MySQL.getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS `"
                             + table
-                            + "` (`player_id` INT(11) AUTO_INCREMENT, `player` VARCHAR(16), `money` VARCHAR(10), `active` VARCHAR(1))");
+                            + "` (`player_id` INT(11) AUTO_INCREMENT, `player` VARCHAR(16), `money` VARCHAR(10), `active` VARCHAR(1));");
 
-            // Retrieves Values
-            ResultSet res = statement.executeQuery("");
-            res.next();
+            tableCreate.executeQuery();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
