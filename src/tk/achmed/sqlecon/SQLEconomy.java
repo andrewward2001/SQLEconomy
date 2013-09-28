@@ -86,7 +86,7 @@ public class SQLEconomy extends JavaPlugin {
             } else {
                 PreparedStatement econRegister = MySQL.getConnection()
                         .prepareStatement("INSERT INTO `" + table
-                                + "` (player, money, active) VALUES (?, ? ,?);");
+                                + "` (player, money, active) VALUES (?, ?, ?);");
                 econRegister.setString(1, event.getPlayer().getName());
                 econRegister.setString(2, defMoney);
                 econRegister.setString(3, "active");
@@ -132,7 +132,8 @@ public class SQLEconomy extends JavaPlugin {
     		int Bal;
     		Bal = money + amount;
     		
-    		PreparedStatement giveMon = MySQL.getConnection().prepareStatement("INSERT INTO `" + table + "` (`money`) VALUES (" + Bal +");");
+    		PreparedStatement giveMon = MySQL.getConnection().prepareStatement("INSERT INTO `" + table + "` (`money`) VALUES ("?");");
+    		giveMon.setString(1, Bal);
     		giveMon.executeUpdate();
     	} catch (SQLException e) {
     		e.printStackTrace();
@@ -150,11 +151,20 @@ public class SQLEconomy extends JavaPlugin {
     		int Bal;
     		Bal = money - amount;
     		
-    		PreparedStatement removeMon = MySQL.getConnection().prepareStatement("INSERT INTO `" + table + "` (`money`) VALUES (" + Bal +");");
+    		PreparedStatement removeMon = MySQL.getConnection().prepareStatement("INSERT INTO `" + table + "` (`money`) VALUES ("?");");
+    		removeMon.setString(1, Bal)
     		removeMon.executeUpdate();
     	} catch (SQLException e) {
     		e.printStackTrace();
     	}
+    }
+    
+    public static void deleteAccount(String player) {
+        try {
+            PreparedStatement remAcc = MySQL.getConnection().prepareStatement("INSERT INTO `" + table + "` (`active`) VALUES ("active");");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label,
