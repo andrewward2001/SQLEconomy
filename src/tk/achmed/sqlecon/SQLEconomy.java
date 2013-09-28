@@ -105,19 +105,70 @@ public class SQLEconomy extends JavaPlugin {
                             + "` (`player_id` INT(11) AUTO_INCREMENT, `player` VARCHAR(16), `money` VARCHAR(10), `active` VARCHAR(1));");
 
             tableCreate.executeQuery();
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    
+    public static void getBalance(String player) {
+    	try {
+    		PreparedStatement balance = MySQL.getConnection().prepareStatement("SELECT money FROM `" + table + "` WHERE player=?;");
+    		balance.setString(1, player);
+    		
+    		balance.executeQuery();
+    	} catch (SQLException e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    public static void giveMoney(String player, int amount) {
+    	try {
+    		PreparedStatement getBal = MySQL.getConnection().prepareStatement("SELECT money FROM `" + table + "` WHERE player=?;"); 
+    		getBal.setString(1, player);
+    		String query = null;
+    		getBal.executeQuery(query);
+    		int money = Integer.parseInt(query);
+    		
+    		int Bal;
+    		Bal = money + amount;
+    		
+    		PreparedStatement giveMon = MySQL.getConnection().prepareStatement("INSERT INTO `" + table + "` (`money`) VALUES (" + Bal +");");
+    		giveMon.executeUpdate();
+    	} catch (SQLException e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    public static void removeMoney(String player, int amount) {
+    	try {
+    		PreparedStatement getBal = MySQL.getConnection().prepareStatement("SELECT money FROM `" + table + "` WHERE player=?;"); 
+    		getBal.setString(1, player);
+    		String query = null;
+    		getBal.executeQuery(query);
+    		int money = Integer.parseInt(query);
+    		
+    		int Bal;
+    		Bal = money - amount;
+    		
+    		PreparedStatement removeMon = MySQL.getConnection().prepareStatement("INSERT INTO `" + table + "` (`money`) VALUES (" + Bal +");");
+    		removeMon.executeUpdate();
+    	} catch (SQLException e) {
+    		e.printStackTrace();
+    	}
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label,
                              String[] args) {
         if (cmd.getName().equalsIgnoreCase("money")) {
             try {
-                PreparedStatement getMoney = MySQL.getConnection().prepareStatement("SELECT money FROM `" + table + "` WHERE player=?");
+                PreparedStatement getMoney = MySQL.getConnection().prepareStatement("SELECT money FROM `" + table + "` WHERE player=?;");
                 getMoney.setString(1, sender.getName());
-                getMoney.executeQuery();
+                
+                String query = null;
+                
+                getMoney.executeQuery(query);
+
+                sender.sendMessage("" + query);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
