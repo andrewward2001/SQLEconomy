@@ -110,18 +110,19 @@ public class SQLEconomy extends JavaPlugin {
         }
     }
     
-    public static void getBalance(String player) {
+    public static getBalance(String player) {
     	try {
     		PreparedStatement balance = MySQL.getConnection().prepareStatement("SELECT money FROM `" + table + "` WHERE player=?;");
     		balance.setString(1, player);
     		
-    		balance.executeQuery();
+    		balance.executeQuery(query);
+    		return query;
     	} catch (SQLException e) {
     		e.printStackTrace();
     	}
     }
     
-    public static void giveMoney(String player, int amount) {
+    public static giveMoney(String player, int amount) {
     	try {
     		PreparedStatement getBal = MySQL.getConnection().prepareStatement("SELECT money FROM `" + table + "` WHERE player=?;"); 
     		getBal.setString(1, player);
@@ -135,12 +136,13 @@ public class SQLEconomy extends JavaPlugin {
     		PreparedStatement giveMon = MySQL.getConnection().prepareStatement("INSERT INTO `" + table + "` (`money`) VALUES ("?");");
     		giveMon.setString(1, Bal);
     		giveMon.executeUpdate();
+    		return Bal;
     	} catch (SQLException e) {
     		e.printStackTrace();
     	}
     }
     
-    public static void removeMoney(String player, int amount) {
+    public static removeMoney(String player, int amount) {
     	try {
     		PreparedStatement getBal = MySQL.getConnection().prepareStatement("SELECT money FROM `" + table + "` WHERE player=?;"); 
     		getBal.setString(1, player);
@@ -154,6 +156,7 @@ public class SQLEconomy extends JavaPlugin {
     		PreparedStatement removeMon = MySQL.getConnection().prepareStatement("INSERT INTO `" + table + "` (`money`) VALUES ("?");");
     		removeMon.setString(1, Bal)
     		removeMon.executeUpdate();
+    		return Bal;
     	} catch (SQLException e) {
     		e.printStackTrace();
     	}
