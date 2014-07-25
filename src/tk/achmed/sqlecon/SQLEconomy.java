@@ -33,6 +33,9 @@ public class SQLEconomy extends JavaPlugin {
     private static MySQL MySQL = new MySQL(host, port, database, user, pass);
 
     public void onDisable() {
+        
+        getLogger().info("Disconnecting from SQL...");
+        
     }
 
     public void onEnable() {
