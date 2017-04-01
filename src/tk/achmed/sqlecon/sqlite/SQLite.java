@@ -1,81 +1,55 @@
 package tk.achmed.sqlecon.sqlite;
 
+import tk.achmed.sqlecon.Database;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
 
-import org.bukkit.plugin.Plugin;
-
-import tk.achmed.sqlecon.Database;
-
+/**
+ * Connects to and uses a SQLite database
+ *
+ * @author tips48
+ */
 public class SQLite extends Database {
     private final String dbLocation;
 
-    private Connection connection;
-
     /**
      * Creates a new SQLite instance
-     * 
-     * @param plugin
-     *            Plugin instance
-     * @param dbLocation
-     *            Location of the Database (Must end in .db)
+     *
+     * @param dbLocation Location of the Database (Must end in .db)
      */
-    public SQLite(Plugin plugin, String dbLocation) {
-        super(plugin);
+    public SQLite(String dbLocation) {
         this.dbLocation = dbLocation;
-        this.connection = null;
     }
 
     @Override
-    public Connection openConnection() {
-        File file = new File(dbLocation);
+    public Connection openConnection() throws SQLException,
+            ClassNotFoundException {
+        if (checkConnection()) {
+            return connection;
+        }
+
+        File dataFolder = new File("sqlite-db/");
+        if (!dataFolder.exists()) {
+            dataFolder.mkdirs();
+        }
+
+        File file = new File(dataFolder, dbLocation);
         if (!(file.exists())) {
             try {
                 file.createNewFile();
             } catch (IOException e) {
-                plugin.getLogger().log(Level.SEVERE, "Unable to create database!");
+                System.out.println("Unable to create database!");
             }
         }
-        try {
-            Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:" + plugin.getDataFolder().getPath().toString() + "/" + dbLocation);
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "Could not connect to SQLite server! because: " + e.getMessage());
-        } catch (ClassNotFoundException e) {
-            plugin.getLogger().log(Level.SEVERE, "JDBC Driver not found!");
-        }
+        Class.forName("org.sqlite.JDBC");
+        connection = DriverManager
+                .getConnection("jdbc:sqlite:"
+                        + dataFolder + "/"
+                        + dbLocation);
         return connection;
     }
-
-    @Override
-    public boolean checkConnection() {
-        try {
-            return !(connection.isClosed());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    @Override
-    public Connection getConnection() {
-        return connection;
-    }
-
-    @Override
-    public void closeConnection() {
-        if (connection != null) {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "Error closing the SQLite Connection!");
-                e.printStackTrace();
-            }
-        }
-    }
-
 }

@@ -5,21 +5,20 @@
 ######################################
 # MySQL and SQLite only!
 #
-# Enter your database host ip below. My be a URL!
+# Enter your database host ip below. May be a URL!
 # If you have WAMP or XAMPP server this is already installed, just use 'localhost'
 DatabaseHostIP: localhost
 # Enter your SQL port below. If you are unsure, leave as-is. If your
-# SQL is NOT a default install, you MUST change this.
-DatabasePort: 1433
-# What your database is called. This MUST be pre-established.
-DatabaseName: Economy
-# What your table name is. You DO NOT need to create it, as the plugin will for you.
-DatabaseTable: Economy
-# The username to access your database. If you are using the WAMP or XAMPP services
-# you should set this as 'root' unless you've changed it.
+# SQL is NOT a default install, you MIGHT NEED TO change this.
+DatabasePort: 3306
+# What your database is called. This MUST HAVE ALREADY BEEN CREATED.
+DatabaseName: economy
+# What your table name is. DO NOT CREATE IT YOURSELF.
+DatabaseTable: economy
+# The username to access your database. This might be root if you're using a localhost.
 DatabaseUsername: root
-# If you are running a default install of WAMP or XAMPP you should leave this blank.
-DatabasePassword: Pass
+# A password is REQUIRED.
+DatabasePassword: pass
 
 # Set the default money your players will have. MUST BE A WHOLE NUMBER
 DefaultMoney: 1000
