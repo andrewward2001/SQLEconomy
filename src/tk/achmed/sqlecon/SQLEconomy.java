@@ -5,19 +5,23 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 
 import java.sql.Connection;
 
 import tk.achmed.sqlecon.mysql.*;
 
-public class SQLEconomy extends JavaPlugin {
+public class SQLEconomy extends JavaPlugin implements Listener {
 
 	private Plugin plugin;
 
@@ -61,14 +65,14 @@ public class SQLEconomy extends JavaPlugin {
 		}
 
 		createTable();
+		
+		Bukkit.getServer().getPluginManager().registerEvents(this, this);
 	}
 
 	public synchronized static boolean playerDataContainsPlayer(Player player) {
 		try {
-			PreparedStatement sql = MySQL.getConnection()
-					.prepareStatement("SELECT * FROM `" + table + " WHERE player=?;");
-			sql.setString(1, player.getName());
-			ResultSet resultSet = sql.executeQuery();
+			Statement sql = c.createStatement();
+			ResultSet resultSet = sql.executeQuery("SELECT * FROM `" + table + "` WHERE `player` = '" + player.getName() + "';");
 			boolean containsPlayer = resultSet.next();
 
 			sql.close();
@@ -95,10 +99,11 @@ public class SQLEconomy extends JavaPlugin {
 				resultset.next();
 			} else {
 				PreparedStatement econRegister = MySQL.getConnection()
-						.prepareStatement("INSERT INTO `" + table + "` (player, money, active) VALUES (?, ? ,?);");
+						.prepareStatement("INSERT INTO `" + table + "` (player, player_uuid, money, active) VALUES (?, ?, ? ,?);");
 				econRegister.setString(1, event.getPlayer().getName());
-				econRegister.setString(2, defMoney);
-				econRegister.setString(3, "active");
+				econRegister.setString(2, event.getPlayer().getUniqueId().toString());
+				econRegister.setString(3, defMoney);
+				econRegister.setLong(4, 1);
 				econRegister.executeUpdate();
 			}
 
@@ -110,12 +115,14 @@ public class SQLEconomy extends JavaPlugin {
 	public static void createTable() {
 		try {
 			Statement tableCreate = c.createStatement();
-			tableCreate.execute("CREATE TABLE `" + table
-					+ "` (`player_id` int(11) NOT NULL, `player` varchar(255) NOT NULL, `money` int(20) NOT NULL, `active` int(1) NOT NULL DEFAULT '1') ENGINE=InnoDB DEFAULT CHARSET=latin1;");
+			tableCreate.execute("CREATE TABLE IF NOT EXISTS `" + table
+					+ "` (`player_id` int(11) NOT NULL, `player` varchar(255) NOT NULL, `player_uuid` varchar(255) NOT NULL, `money` int(20) NOT NULL, `active` int(1) NOT NULL DEFAULT '1') ENGINE=InnoDB DEFAULT CHARSET=latin1;");
 			tableCreate.execute("ALTER TABLE `" + table + "` ADD PRIMARY KEY (`player_id`);");
 			tableCreate.execute("ALTER TABLE `" + table + "` MODIFY `player_id` int(11) NOT NULL AUTO_INCREMENT;");
 			
 			System.out.println("Created database table");
+		} catch (MySQLSyntaxErrorException e) {
+			System.out.println("[SQLEconomy] There was a snag initializing the database. It's probably nothing, though.");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
