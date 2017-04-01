@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
@@ -16,11 +17,11 @@ public class SQLEconomyActions {
 	private static Connection c = SQLEconomy.c;
 	private static String table = SQLEconomy.getTable();
 
-	public synchronized static boolean playerDataContainsPlayer(Player player) {
+	public synchronized static boolean playerDataContainsPlayer(UUID uid) {
 		try {
 			Statement sql = c.createStatement();
 			ResultSet resultSet = sql.executeQuery(
-					"SELECT * FROM `" + table + "` WHERE `player_uuid` = '" + player.getUniqueId() + "';");
+					"SELECT * FROM `" + table + "` WHERE `player_uuid` = '" + uid + "';");
 			boolean containsPlayer = resultSet.next();
 
 			sql.close();
@@ -185,6 +186,44 @@ public class SQLEconomyActions {
 
 		return 0;
 
+	}
+	
+	public static boolean createAccount(OfflinePlayer player) {
+		try {
+			PreparedStatement econRegister = c.prepareStatement(
+					"INSERT INTO `" + table + "` (player, player_uuid, money, active) VALUES (?, ?, ?, ?);");
+			econRegister.setString(1, player.getName());
+			econRegister.setString(2, player.getUniqueId().toString());
+			econRegister.setString(3, SQLEconomy.getDefaultMoney());
+			econRegister.setLong(4, 1);
+			econRegister.executeUpdate();
+			econRegister.close();
+			
+			System.out.println("[SQLEconomy] Added user " + player.getName() + " to the economy database.");
+		} catch (SQLException e) {
+			System.out.println("[SQLEconomy] Error creating user!");
+		}
+		
+		return false;
+	}
+	
+	public static boolean createAccount(String name) {
+		try {
+			PreparedStatement econRegister = c.prepareStatement(
+					"INSERT INTO `" + table + "` (player, player_uuid, money, active) VALUES (?, ?, ?, ?);");
+			econRegister.setString(1, name);
+			econRegister.setString(2, UUID.randomUUID().toString());
+			econRegister.setString(3, SQLEconomy.getDefaultMoney());
+			econRegister.setLong(4, 1);
+			econRegister.executeUpdate();
+			econRegister.close();
+			
+			System.out.println("[SQLEconomy] Added user " + name + " to the economy database.");
+		} catch (SQLException e) {
+			System.out.println("[SQLEconomy] Error creating user!");
+		}
+		
+		return false;
 	}
 
 }

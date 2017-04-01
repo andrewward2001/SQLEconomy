@@ -29,7 +29,7 @@ public class SQLEconomyListener implements Listener {
 		Player player = event.getPlayer();
 
 		try {
-			if (!SQLEconomyActions.playerDataContainsPlayer(player)) {
+			if (!SQLEconomyActions.playerDataContainsPlayer(player.getUniqueId())) {
 				PreparedStatement econRegister = c.prepareStatement(
 						"INSERT INTO `" + table + "` (player, player_uuid, money, active) VALUES (?, ?, ?, ?);");
 				econRegister.setString(1, player.getName());

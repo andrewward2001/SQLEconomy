@@ -1,19 +1,27 @@
 package io.github.andrewward2001.sqlecon;
 
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.ServicePriority;
+import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import io.github.andrewward2001.sqlecon.hooks.VaultConnector;
+import io.github.andrewward2001.sqlecon.hooks.Dependency;
 import io.github.andrewward2001.sqlecon.mysql.*;
+import net.milkbowl.vault.economy.Economy;
 
 import java.sql.Connection;
 
 public class SQLEconomy extends JavaPlugin implements Listener {
 
 	private Plugin plugin;
+	
+	public static SQLEconomy S;
 
 	// Making variables for SQL connection static, escaping errors
 	private static String host;
@@ -60,15 +68,31 @@ public class SQLEconomy extends JavaPlugin implements Listener {
 
 		this.getCommand("money").setExecutor(new MoneyCommand(this));
 		Bukkit.getServer().getPluginManager().registerEvents(new SQLEconomyListener(table, defMoney, c), this);
+		
+		registerEconomy();
 	}
 	
 	public static String getTable() {
 		return table;
 	}
 	
-	public SQLEconomyAPI getAPI() {
-		return new SQLEconomyAPI(c);
+	public static String getDefaultMoney() {
+		return defMoney;
 	}
+	
+	public static SQLEconomyAPI getAPI() {
+		return new SQLEconomyAPI();
+	}
+	
+	private void registerEconomy() {
+        if (Dependency.DEP.vault.exists()) {
+            final ServicesManager sm = getServer().getServicesManager();
+            sm.register(Economy.class, new VaultConnector(), this, ServicePriority.Highest);
+            getLogger().info("Registered Vault interface.");
+        } else {
+        	getLogger().info("Vault not found. Other plugins may not be able to access Gringotts accounts.");
+        }
+    }
 
 	public boolean isInteger(String str) {
 		if (str == null) {
