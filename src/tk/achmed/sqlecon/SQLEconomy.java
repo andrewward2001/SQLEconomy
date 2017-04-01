@@ -4,8 +4,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -33,6 +35,8 @@ public class SQLEconomy extends JavaPlugin implements Listener {
 	private static String user;
 	private static String pass;
 	private static String defMoney;
+	
+	private static String moneyUnit;
 
 	private static MySQL MySQL;
 	private static Connection c;
@@ -52,6 +56,8 @@ public class SQLEconomy extends JavaPlugin implements Listener {
 		user = getConfig().getString("DatabaseUsername");
 		pass = getConfig().getString("DatabasePassword");
 		defMoney = getConfig().getString("DefaultMoney");
+		
+		moneyUnit = getConfig().getString("MoneyUnit");
 
 		MySQL = new MySQL(host, port, database, user, pass);
 		try {
@@ -72,7 +78,7 @@ public class SQLEconomy extends JavaPlugin implements Listener {
 	public synchronized static boolean playerDataContainsPlayer(Player player) {
 		try {
 			Statement sql = c.createStatement();
-			ResultSet resultSet = sql.executeQuery("SELECT * FROM `" + table + "` WHERE `player` = '" + player.getName() + "';");
+			ResultSet resultSet = sql.executeQuery("SELECT * FROM `" + table + "` WHERE `player_uuid` = '" + player.getUniqueId() + "';");
 			boolean containsPlayer = resultSet.next();
 
 			sql.close();
@@ -116,11 +122,9 @@ public class SQLEconomy extends JavaPlugin implements Listener {
 		try {
 			Statement tableCreate = c.createStatement();
 			tableCreate.execute("CREATE TABLE IF NOT EXISTS `" + table
-					+ "` (`player_id` int(11) NOT NULL, `player` varchar(255) NOT NULL, `player_uuid` varchar(255) NOT NULL, `money` int(20) NOT NULL, `active` int(1) NOT NULL DEFAULT '1') ENGINE=InnoDB DEFAULT CHARSET=latin1;");
-			tableCreate.execute("ALTER TABLE `" + table + "` ADD PRIMARY KEY (`player_id`);");
-			tableCreate.execute("ALTER TABLE `" + table + "` MODIFY `player_id` int(11) NOT NULL AUTO_INCREMENT;");
+					+ "` (`player_id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT, `player` varchar(255) NOT NULL, `player_uuid` varchar(255) NOT NULL, `money` int(20) NOT NULL, `active` int(1) NOT NULL DEFAULT '1') ENGINE=InnoDB DEFAULT CHARSET=latin1;");
 			
-			System.out.println("Created database table");
+			System.out.println("[SQLEconomy] Created/checked the database table");
 		} catch (MySQLSyntaxErrorException e) {
 			System.out.println("[SQLEconomy] There was a snag initializing the database. It's probably nothing, though.");
 		} catch (SQLException e) {
@@ -179,21 +183,31 @@ public class SQLEconomy extends JavaPlugin implements Listener {
 			e.printStackTrace();
 		}
 	}
+	
+	public double getMoney(UUID uid) {
+		
+		try {
+			Statement getMoney = c.createStatement();
+			ResultSet res = getMoney.executeQuery("SELECT money FROM `" + table + "` WHERE player_uuid = '" + uid.toString() + "';");
+			res.next();
+
+			return res.getDouble("money");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return 0;
+		
+	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("money")) {
-			try {
-				PreparedStatement getMoney = MySQL.getConnection()
-						.prepareStatement("SELECT money FROM `" + table + "` WHERE player=?;");
-				getMoney.setString(1, sender.getName());
-
-				String query = null;
-
-				getMoney.executeQuery(query);
-
-				sender.sendMessage("" + query);
-			} catch (SQLException e) {
-				e.printStackTrace();
+			Player player;
+			if (sender instanceof Player) {
+				player = (Player) sender;
+				double money = getMoney(player.getUniqueId());
+				
+				sender.sendMessage(ChatColor.GREEN + "Money: " + ChatColor.WHITE + money + " " + moneyUnit);
 			}
 		}
 		return false;

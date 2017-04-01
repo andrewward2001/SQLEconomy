@@ -22,3 +22,5 @@ DatabasePassword: pass
 
 # Set the default money your players will have. MUST BE A WHOLE NUMBER
 DefaultMoney: 1000
+# Unit (dollars, pounts, etc)
+MoneyUnit: dollars
