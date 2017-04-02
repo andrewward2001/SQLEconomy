@@ -24,3 +24,5 @@ DatabasePassword: pass
 DefaultMoney: 1000
 # Unit (dollars, pounts, etc)
 MoneyUnit: dollars
+# Tax rate (percentage)
+TaxRate: 0

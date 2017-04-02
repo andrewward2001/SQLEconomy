@@ -8,7 +8,6 @@ import java.sql.Statement;
 import java.util.UUID;
 
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 
@@ -16,6 +15,8 @@ public class SQLEconomyActions {
 
 	private static Connection c = SQLEconomy.c;
 	private static String table = SQLEconomy.getTable();
+	
+	private static double taxRate = SQLEconomy.S.taxRate;
 
 	public synchronized static boolean playerDataContainsPlayer(UUID uid) {
 		try {
@@ -65,77 +66,91 @@ public class SQLEconomyActions {
 					"[SQLEconomy] There was a snag initializing the database. Please send the ENTIRE stack trace above.");
 		} catch (SQLException e) {
 			e.printStackTrace();
+			System.out.println(
+					"[SQLEconomy] There was a snag initializing the database. Make sure you set up the config!");
 		}
 	}
 
-	public static boolean giveMoney(UUID uid, int amount) {
-		try {
-			PreparedStatement giveMoney = c
-					.prepareStatement("UPDATE `" + table + "` SET money = money + ? WHERE player_uuid=?;");
-			giveMoney.setInt(1, amount);
-			giveMoney.setString(2, uid.toString());
-			giveMoney.executeUpdate();
-
-			giveMoney.close();
-
-			return true;
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+	public static boolean giveMoney(UUID uid, int amount, boolean tax) {
+		if(amount > 0)
+			if(tax)
+				amount -= amount*taxRate;
+			try {
+				PreparedStatement giveMoney = c
+						.prepareStatement("UPDATE `" + table + "` SET money = money + ? WHERE player_uuid=?;");
+				giveMoney.setInt(1, amount);
+				giveMoney.setString(2, uid.toString());
+				giveMoney.executeUpdate();
+	
+				giveMoney.close();
+	
+				return true;
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 
 		return false;
 	}
 
-	public static boolean giveMoney(String name, int amount) {
-		try {
-			PreparedStatement giveMoney = c
-					.prepareStatement("UPDATE `" + table + "` SET money = money + ? WHERE player=?;");
-			giveMoney.setInt(1, amount);
-			giveMoney.setString(2, name);
-			giveMoney.executeUpdate();
-
-			giveMoney.close();
-
-			return true;
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		return false;
-	}
-
-	public static boolean removeMoney(UUID uid, int amount) {
-		try {
-			PreparedStatement removeMoney = c
-					.prepareStatement("UPDATE `" + table + "` SET money = money - ? WHERE player_uuid=?;");
-			removeMoney.setInt(1, amount);
-			removeMoney.setString(2, uid.toString());
-			removeMoney.executeUpdate();
-
-			removeMoney.close();
-
-			return true;
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+	public static boolean giveMoney(String name, int amount, boolean tax) {
+		if(amount > 0)
+			if(tax)
+				amount -= amount*taxRate;
+			try {
+				PreparedStatement giveMoney = c
+						.prepareStatement("UPDATE `" + table + "` SET money = money + ? WHERE player=?;");
+				giveMoney.setInt(1, amount);
+				giveMoney.setString(2, name);
+				giveMoney.executeUpdate();
+	
+				giveMoney.close();
+	
+				return true;
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 
 		return false;
 	}
 
-	public static boolean removeMoney(String name, int amount) {
-		try {
-			PreparedStatement getBal = c
-					.prepareStatement("UPDATE `" + table + "` SET money = money - ? WHERE player=?;");
-			getBal.setInt(1, amount);
-			getBal.setString(2, name);
-			getBal.executeUpdate();
+	public static boolean removeMoney(UUID uid, int amount, boolean tax) {
+		if(amount > 0)
+			if(tax)
+				amount += amount*taxRate;
+			try {
+				PreparedStatement removeMoney = c
+						.prepareStatement("UPDATE `" + table + "` SET money = money - ? WHERE player_uuid=?;");
+				removeMoney.setInt(1, amount);
+				removeMoney.setString(2, uid.toString());
+				removeMoney.executeUpdate();
+	
+				removeMoney.close();
+	
+				return true;
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 
-			getBal.close();
+		return false;
+	}
 
-			return true;
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+	public static boolean removeMoney(String name, int amount, boolean tax) {
+		if(amount > 0)
+			if(tax)
+				amount += amount*taxRate;
+			try {
+				PreparedStatement getBal = c
+						.prepareStatement("UPDATE `" + table + "` SET money = money - ? WHERE player=?;");
+				getBal.setInt(1, amount);
+				getBal.setString(2, name);
+				getBal.executeUpdate();
+	
+				getBal.close();
+	
+				return true;
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 
 		return false;
 	}
@@ -146,16 +161,18 @@ public class SQLEconomyActions {
 			Statement getMoney = c.createStatement();
 			ResultSet res = getMoney
 					.executeQuery("SELECT money FROM `" + table + "` WHERE player_uuid = '" + uid.toString() + "';");
-			res.next();
+			while(res.next()) {
+				int money = 0;
+				if (res.getString("money") != null)
+					money = res.getInt("money");
+	
+				getMoney.close();
+				res.close();
+	
+				return money;
+			}
 			
-			int money = 0;
-			if (res.getString("money") != null)
-				money = res.getInt("money");
-
-			getMoney.close();
-			res.close();
-
-			return money;
+			return -1;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -170,16 +187,18 @@ public class SQLEconomyActions {
 			PreparedStatement getMoney = c.prepareStatement("SELECT money FROM `" + table + "` WHERE player = ?;");
 			getMoney.setString(1, name);
 			ResultSet res = getMoney.executeQuery();
-			res.next();
-
-			int money = 0;
-			if (res.getString("money") != null)
-				money = res.getInt("money");
-
-			getMoney.close();
-			res.close();
-
-			return money;
+			while(res.next()) {
+				int money = 0;
+				if (res.getString("money") != null)
+					money = res.getInt("money");
+	
+				getMoney.close();
+				res.close();
+	
+				return money;
+			}
+			
+			return -1;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -222,6 +241,33 @@ public class SQLEconomyActions {
 		} catch (SQLException e) {
 			System.out.println("[SQLEconomy] Error creating user!");
 		}
+		
+		return false;
+	}
+	
+	public static boolean hasEnough(UUID uid, int amount) {
+		int bal = getMoney(uid);
+		
+		if(bal >= (int) amount) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static boolean hasEnough(String name, int amount) {
+		int bal = getMoney(name);
+		
+		if(bal >= (int) amount) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static boolean transferMoney(String name, UUID uid, int amount) {
+		if(giveMoney(name, amount, false) && removeMoney(uid, amount, false) && hasEnough(uid, amount))
+			return true;
 		
 		return false;
 	}

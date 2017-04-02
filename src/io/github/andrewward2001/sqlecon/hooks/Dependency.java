@@ -42,9 +42,9 @@ public enum Dependency {
         Plugin plugin;
         if (packagesExists(classpath)) {
             plugin = Bukkit.getServer().getPluginManager().getPlugin(name);
-            System.out.println("Plugin "+name+" hooked.");
+            System.out.println("[SQLEconomy] Plugin "+name+" hooked.");
         } else {
-            System.out.println("Unable to hook plugin " + name);
+            System.out.println("[SQLEconomy] Unable to hook plugin " + name);
             plugin = null;
         }
 

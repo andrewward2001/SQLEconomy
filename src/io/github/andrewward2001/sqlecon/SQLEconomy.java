@@ -1,7 +1,6 @@
 package io.github.andrewward2001.sqlecon;
 
 import java.sql.SQLException;
-import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
@@ -11,6 +10,8 @@ import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import io.github.andrewward2001.sqlecon.hooks.VaultConnector;
+import io.github.andrewward2001.sqlecon.cmd.Config;
+import io.github.andrewward2001.sqlecon.cmd.Money;
 import io.github.andrewward2001.sqlecon.hooks.Dependency;
 import io.github.andrewward2001.sqlecon.mysql.*;
 import net.milkbowl.vault.economy.Economy;
@@ -33,6 +34,8 @@ public class SQLEconomy extends JavaPlugin implements Listener {
 	private static String defMoney;
 
 	public static String moneyUnit;
+	
+	public static double taxRate; 
 
 	private static MySQL MySQL;
 	static Connection c;
@@ -54,6 +57,8 @@ public class SQLEconomy extends JavaPlugin implements Listener {
 		defMoney = getConfig().getString("DefaultMoney");
 
 		moneyUnit = getConfig().getString("MoneyUnit");
+		
+		taxRate = getConfig().getInt("TaxRate")/100.0;
 
 		MySQL = new MySQL(host, port, database, user, pass);
 		try {
@@ -66,7 +71,9 @@ public class SQLEconomy extends JavaPlugin implements Listener {
 
 		SQLEconomyActions.createTable();
 
-		this.getCommand("money").setExecutor(new MoneyCommand(this));
+		this.getCommand("money").setExecutor(new Money(this));
+		this.getCommand("m").setExecutor(new Money(this));
+		this.getCommand("sqle-config").setExecutor(new Config(this, getConfig()));
 		Bukkit.getServer().getPluginManager().registerEvents(new SQLEconomyListener(table, defMoney, c), this);
 		
 		registerEconomy();
@@ -84,13 +91,14 @@ public class SQLEconomy extends JavaPlugin implements Listener {
 		return new SQLEconomyAPI();
 	}
 	
+	// Vault hook based on implementation found at https://github.com/MinecraftWars/Gringotts
 	private void registerEconomy() {
         if (Dependency.DEP.vault.exists()) {
             final ServicesManager sm = getServer().getServicesManager();
             sm.register(Economy.class, new VaultConnector(), this, ServicePriority.Highest);
-            getLogger().info("Registered Vault interface.");
+            getLogger().info("[SQLEconomy] Registered Vault interface.");
         } else {
-        	getLogger().info("Vault not found. Other plugins may not be able to access Gringotts accounts.");
+        	getLogger().info("[SQLEconomy] Vault not found. Other plugins may not be able to access SQLEconomy accounts.");
         }
     }
 

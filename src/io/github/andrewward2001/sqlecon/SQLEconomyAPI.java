@@ -7,7 +7,7 @@ import org.bukkit.OfflinePlayer;
 public class SQLEconomyAPI {
 	
 	public SQLEconomyAPI() {
-		System.out.println("SQLEconomy API is in use.");
+		System.out.println("[SQLEconomy] API is in use.");
 	}
 	
 	public String currencyName() {
@@ -31,39 +31,27 @@ public class SQLEconomyAPI {
 	}
 	
 	public boolean hasEnough(String name, double amount) {
-		int bal = getBalance(name);
-		
-		if(bal >= (int) amount) {
-			return true;
-		}
-		
-		return false;
+		return SQLEconomyActions.hasEnough(name, (int) amount);
 	}
 	
 	public boolean hasEnough(UUID uid, double amount) {
-		int bal = getBalance(uid);
-		
-		if(bal >= (int) amount) {
-			return true;
-		}
-		
-		return false;
+		return SQLEconomyActions.hasEnough(uid, (int) amount);
 	}
 	
 	public boolean withdraw(String name, double amount) {
-		return SQLEconomyActions.removeMoney(name, (int) amount);
+		return SQLEconomyActions.removeMoney(name, (int) amount, true);
 	}
 	
 	public boolean withdraw(UUID uid, double amount) {
-		return SQLEconomyActions.removeMoney(uid, (int) amount);
+		return SQLEconomyActions.removeMoney(uid, (int) amount, true);
 	}
 	
 	public boolean give(String name, double amount) {
-		return SQLEconomyActions.giveMoney(name, (int) amount);
+		return SQLEconomyActions.giveMoney(name, (int) amount, true);
 	}
 	
 	public boolean give(UUID uid, double amount) {
-		return SQLEconomyActions.giveMoney(uid, (int) amount);
+		return SQLEconomyActions.giveMoney(uid, (int) amount, true);
 	}
 	
 	public boolean createAccount(OfflinePlayer player) {
