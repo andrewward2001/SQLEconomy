@@ -1,6 +1,9 @@
 # SQLEconomy
 SQLEconomy is a bukkit plugin that combines MySQL and SQLite and puts them into an economy plugin. The great thing about SQL is it's extremely organized. Each table is like a spreadsheet, keeping everything organized. If yo don't have and experience with SQL, SQLEconomy doesn't care! It will create a table for you, all on its own.
 
+## Moved repository
+I've moved the [SQLEconomy repo](https://gitlab.com/andrewward2001/SQLEconomy) over to GitLab
+
 ## Installation
 Grab the latest release, then head over to [dev.bukkit.org](https://dev.bukkit.org/projects/sqleconomee) for the instructions.
 
